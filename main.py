@@ -10,7 +10,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship
 from sqlalchemy import ForeignKey
 import datetime
-from apis import email_senderr
+import email_senderr
 import requests
 
 msg = email_senderr.Email()
