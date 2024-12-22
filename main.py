@@ -17,6 +17,7 @@ import requests
 
 load_dotenv()
 APP_SECRET_KEY = os.getenv("APP_SECRET_KEY")
+DB_URL = os.getenv("DB_URL")
 
 msg = email_senderr.Email()
 
@@ -26,7 +27,7 @@ ckeditor = CKEditor(app)
 Bootstrap(app)
 
 ##CONNECT TO DB
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["SQLALCHEMY_ECHO"] = True
 db = SQLAlchemy(app)
@@ -279,6 +280,6 @@ def logout():
 
 
 if __name__ == "__main__":
-    # with app.app_context():
-    #     db.create_all()
+    with app.app_context():
+        db.create_all()
     app.run(debug=True, host="0.0.0.0", port=5001)
