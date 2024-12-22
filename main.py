@@ -11,12 +11,18 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import ForeignKey
 import datetime
 import email_senderr
+from dotenv import load_dotenv
+import os
 import requests
+
+
+load_dotenv()
+APP_SECRET_KEY = os.getenv("APP_SECRET_KEY")
 
 msg = email_senderr.Email()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['SECRET_KEY'] = APP_SECRET_KEY
 ckeditor = CKEditor(app)
 Bootstrap(app)
 
@@ -276,4 +282,4 @@ def logout():
 if __name__ == "__main__":
     # with app.app_context():
     #     db.create_all()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True)
