@@ -15,7 +15,6 @@ from dotenv import load_dotenv
 import os
 import requests
 
-
 load_dotenv()
 APP_SECRET_KEY = os.getenv("APP_SECRET_KEY")
 
@@ -282,4 +281,4 @@ def logout():
 if __name__ == "__main__":
     # with app.app_context():
     #     db.create_all()
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
