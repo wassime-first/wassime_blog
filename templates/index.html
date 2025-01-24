@@ -30,7 +30,7 @@
                     </h3>
                 </a>
                 <p class="post-meta">Posted by
-                    <a href="{{url_for('get_all_posts')}}">{{post.user.name}}</a>
+                    <a href="{{url_for('get_all_posts')}}">{{post.author}}</a>
                     on {{post.date}}{% if id.id == 1 %} <a href="{{url_for('delete', post_id=post.id)}}">✘</a>{% endif
                     %}</p>
             </div>

@@ -3,7 +3,7 @@ from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, EmailField, PasswordField
-from wtforms.validators import DataRequired, URL, Email
+from wtforms.validators import DataRequired, URL, Email, email
 from flask_ckeditor import CKEditor, CKEditorField
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -27,7 +27,7 @@ ckeditor = CKEditor(app)
 Bootstrap(app)
 
 ##CONNECT TO DB
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URL", "sqlite:///blog.db")
+app.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["SQLALCHEMY_ECHO"] = True
 db = SQLAlchemy(app)
@@ -40,7 +40,7 @@ login_manager.login_view = 'login'
 
 ##CONFIGURE TABLE
 class UserT(UserMixin, db.Model):
-    __tablename__ = "users"
+    __tablename__ = "userst"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), unique=True, nullable=False)
     email = db.Column(db.String(250), unique=True, nullable=False)
@@ -59,7 +59,7 @@ class Blog(db.Model):
     body = db.Column(db.Text, nullable=False)
     author = db.Column(db.String(250), nullable=False)
     img_url = db.Column(db.String(250), nullable=False)
-    author_id = db.Column(db.Integer, ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"))
+    author_id = db.Column(db.Integer, ForeignKey("userst.id", ondelete="CASCADE", onupdate="CASCADE"))
     comments = relationship("CommentT", backref="post", cascade="all,delete,save-update")
 
 
@@ -68,7 +68,8 @@ class CommentT(db.Model):
     __tablename__ = "comments"
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"))
+    date = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, ForeignKey("userst.id", ondelete="CASCADE", onupdate="CASCADE"))
     post_id = db.Column(db.Integer, ForeignKey("blogs.id", ondelete="CASCADE", onupdate="CASCADE"))
 
 
@@ -121,6 +122,7 @@ def get_all_posts():
 def show_post(index):
     # date time for the comment
     date = datetime.datetime.now()
+    date = date.strftime("%Y-%m-%d")
     # Get all authors and comments for the current post
     authors = db.session.query(UserT).all()
     comments = db.session.query(CommentT).all()
@@ -128,12 +130,15 @@ def show_post(index):
     form = Comment()
     posts = db.session.query(Blog).all()
     requested_post = db.session.query(Blog).filter(Blog.id == index).first()
+
+
     for blog_post in posts:
         if blog_post.id == index:
             requested_post = blog_post
+            user = db.session.query(UserT).filter(UserT.id == requested_post.author_id).first()
             if form.validate_on_submit():
                 if current_user.is_authenticated:
-                    comment = CommentT(text=form.comment.data, user_id=current_user.id, post_id=index)
+                    comment = CommentT(text=form.comment.data, date=date, user_id=current_user.id, post_id=index)
                     db.session.add(comment)
                     db.session.commit()
                 else:
@@ -144,7 +149,7 @@ def show_post(index):
                            id=current_user,
                            form=form,
                            comments=comments,
-                           date=date.date(),
+                           user=user
                            )
 
 
@@ -282,4 +287,4 @@ def logout():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(debug=True, host="0.0.0.0", port=5001)
+    app.run(host="0.0.0.0", port=5001)
